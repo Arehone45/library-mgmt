@@ -66,11 +66,22 @@ public class BookServiceImpl implements BookService {
         Student student = studentService.getStudentByStudentNo(studentNo);
         log.info("Student found: " + student.toString());
 
-        if (reqdBook.getIsBorrowed() == null || !reqdBook.getIsBorrowed()) {
-            reqdBook.setIsBorrowed(true);
-            reqdBook.setBorrowedBy(student);
+        List<Book> booksBorrowedBy = bookRepository.findBookByBorrowedBy(student);
+        int noOfBooks = booksBorrowedBy.toArray().length;
+        log.info(String.valueOf(noOfBooks));
+
+        int maxBooks = 4;
+        if (noOfBooks < maxBooks) {
+
+            if (reqdBook.getIsBorrowed() == null || !reqdBook.getIsBorrowed()) {
+                reqdBook.setIsBorrowed(true);
+                reqdBook.setBorrowedBy(student);
+            } else {
+                throw new BookException("Required book is already borrowed");
+            }
+
         } else {
-            throw new BookException("Required book is already borrowed");
+            throw new BookException("Max number of books borrowed reached. Return books to be able to borrow again.");
         }
 
         return bookRepository.save(reqdBook);
